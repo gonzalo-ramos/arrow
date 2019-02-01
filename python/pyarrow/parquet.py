@@ -1187,7 +1187,7 @@ def _mkdir_if_not_exists(fs, path):
 
 
 def write_to_dataset(table, root_path, partition_cols=None,
-                     filesystem=None, preserve_index=True, **kwargs):
+                     filesystem=None, preserve_index=True, prefix='', **kwargs):
     """
     Wrapper around parquet.write_table for writing a Table to
     Parquet format by partitions.
@@ -1220,6 +1220,8 @@ def write_to_dataset(table, root_path, partition_cols=None,
         Columns are partitioned in the order they are given
     preserve_index : bool,
         Parameter for instantiating Table; preserve pandas index or not.
+    prefix : str,
+        Allows to set a custom prefix for target filename.
     **kwargs : dict, kwargs for write_table function.
     """
     fs, root_path = _get_filesystem_and_path(filesystem, root_path)
@@ -1253,12 +1255,12 @@ def write_to_dataset(table, root_path, partition_cols=None,
                                             safe=False)
             prefix = '/'.join([root_path, subdir])
             _mkdir_if_not_exists(fs, prefix)
-            outfile = guid() + '.parquet'
+            outfile = prefix + guid() + '.parquet'
             full_path = '/'.join([prefix, outfile])
             with fs.open(full_path, 'wb') as f:
                 write_table(subtable, f, **kwargs)
     else:
-        outfile = guid() + '.parquet'
+        outfile = prefix + guid() + '.parquet'
         full_path = '/'.join([root_path, outfile])
         with fs.open(full_path, 'wb') as f:
             write_table(table, f, **kwargs)
